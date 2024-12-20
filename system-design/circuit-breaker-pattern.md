@@ -1,35 +1,36 @@
 # Circuit Breaker Pattern
 
 ## Problem
-Service A calls Service B. If B is down, A keeps trying, wasting resources and cascading the failure.
+Cascading failures when a downstream service is unavailable can bring down the entire system.
 
-## Solution: Circuit Breaker
+## Solution
+The circuit breaker monitors failures and "trips" when a threshold is exceeded, preventing further calls.
 
-### States
+## States
+1. **Closed** – Requests flow normally; failures are counted
+2. **Open** – All requests fail fast without calling the service
+3. **Half-Open** – A limited number of test requests are allowed through
+
+## Implementation with Resilience4j
+```java
+CircuitBreakerConfig config = CircuitBreakerConfig.custom()
+    .failureRateThreshold(50)            // 50% failure rate
+    .waitDurationInOpenState(Duration.ofSeconds(30))
+    .slidingWindowSize(10)
+    .minimumNumberOfCalls(5)
+    .build();
+
+CircuitBreaker cb = CircuitBreaker.of("paymentService", config);
+Supplier<String> decorated = CircuitBreaker.decorateSupplier(cb, () -> paymentService.charge());
 ```
-CLOSED  →→→  OPEN  →→→  HALF-OPEN
-  ↑                         |
-  └─────────────────────────┘
-```
 
-1. **CLOSED**: Normal operation. Track failures.
-2. **OPEN**: After N failures, stop sending requests. Fail fast. Wait timeout.
-3. **HALF-OPEN**: Allow one test request. If success → CLOSED. If fail → OPEN.
+## Key Metrics
+- Failure rate threshold (typically 50%)
+- Wait duration in open state (30-60s)
+- Sliding window size (10-100 requests)
+- Minimum number of calls before evaluation
 
-## Configuration
-```yaml
-circuitBreaker:
-  failureThreshold: 5       # Open after 5 failures
-  successThreshold: 3       # Close after 3 successes in half-open
-  timeout: 30000            # 30s before trying half-open
-  monitorInterval: 10000    # Check every 10s
-```
-
-## Implementations
-- **Resilience4j** (Java) — used in Spring Boot
-- **Polly** (.NET)
-- **Istio** — service mesh level (no code changes)
-- **AWS App Mesh** — Envoy-based circuit breaking
-
-## At Work
-We use circuit breakers in our microservices to prevent cascading failures during deployments. Combined with retry + exponential backoff for transient errors.
+## When to Use
+- Calls to external APIs or microservices
+- Database connections under heavy load
+- Any remote call that could fail or timeout
