@@ -1,25 +1,37 @@
-# Consistent Hashing for Distributed Systems
+# Consistent Hashing
 
-Traditional hashing (`hash(key) % N`) breaks when you add/remove servers — nearly all keys get remapped.
+## Problem
+When using `hash(key) % N` for N servers, adding/removing a server remaps almost all keys.
 
-## How Consistent Hashing Works
+## Solution
+Arrange servers on a hash ring. Each key maps to the next server clockwise on the ring.
 
-1. Map both **servers** and **keys** onto a circular hash ring (0 to 2^32)
-2. Each key is assigned to the **next server clockwise** on the ring
-3. Adding/removing a server only affects keys between it and its predecessor
+## How It Works
+1. Hash servers onto a ring (0 to 2^32-1)
+2. Hash each key onto the same ring
+3. Walk clockwise from key's position to find the server
 
 ## Virtual Nodes
-
-To handle uneven distribution, each physical server gets multiple **virtual nodes** on the ring.
-
+Real servers map to multiple points on the ring:
 ```
-Server A → vnode_A1, vnode_A2, vnode_A3, ...
-Server B → vnode_B1, vnode_B2, vnode_B3, ...
+Server A → vnode_A_0, vnode_A_1, vnode_A_2, ...
+Server B → vnode_B_0, vnode_B_1, vnode_B_2, ...
 ```
 
-## Used By
+Benefits:
+- More even distribution of keys
+- Smoother rebalancing when nodes join/leave
+- Typically 100-200 vnodes per physical node
 
-- **Amazon DynamoDB** — partition key routing
-- **Apache Cassandra** — token ring
-- **Memcached** — client-side consistent hashing
-- **Content Delivery Networks** — cache distribution
+## Impact of Node Changes
+| Operation | Keys Remapped |
+|-----------|---------------|
+| Traditional (mod N) | ~100% |
+| Consistent hashing | ~K/N (only affected keys) |
+
+## Used In
+- Amazon DynamoDB
+- Apache Cassandra
+- Memcached
+- Redis Cluster
+- Content Delivery Networks (CDNs)
