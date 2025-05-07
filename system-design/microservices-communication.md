@@ -1,46 +1,55 @@
 # Microservices Communication Patterns
 
 ## Synchronous
-
 ### REST (HTTP/JSON)
-- Simple, well-understood, stateless
-- **Downside**: Tight coupling, cascading failures
-- Use for: CRUD operations, simple request-response
+- Simple, universal
+- Tight coupling between services
+- Latency accumulates in call chains
 
-### gRPC (HTTP/2 + Protobuf)
-- Binary protocol, much faster than REST
-- Streaming support, strong typing
-- Use for: Internal service-to-service, low-latency needs
-- **Cloud Run, GKE, ECS** all support gRPC
+### gRPC (HTTP/2 + Protocol Buffers)
+- 10x faster than REST for inter-service
+- Strong typing with proto files
+- Streaming support
+- Poor browser support (use gRPC-Web)
 
 ## Asynchronous
+### Message Queue (Point-to-Point)
+```
+Service A → Queue → Service B
+```
+- RabbitMQ, SQS, Azure Service Bus
+- Exactly-once delivery guarantees
+- Decoupled sender and receiver
 
-### Message Queue (SQS, Service Bus, Pub/Sub)
-- Decouple producer and consumer
-- Handle spikes via buffering
-- Use for: Background jobs, order processing
-
-### Event-Driven (Kafka, EventBridge, Event Grid)
-- Publish events, multiple subscribers react
-- Use for: Real-time data pipelines, CQRS
+### Event Bus (Pub/Sub)
+```
+Service A → Topic → Service B
+                  → Service C
+                  → Service D
+```
+- Kafka, SNS, Azure Event Grid
+- Multiple consumers per event
+- Event replay capability (Kafka)
 
 ## Patterns
 
-### API Gateway
-Single entry point → routes to services
-- AWS API Gateway / ALB
-- Azure API Management
-- GCP API Gateway / Apigee
+### Request-Reply (Async)
+```
+Service A → Request Queue → Service B
+Service A ← Reply Queue   ← Service B
+```
 
-### Service Mesh
-Sidecar proxy handles networking (mTLS, retries, observability)
-- **Istio**, **Linkerd**, **AWS App Mesh**
+### Event-Driven Choreography
+Services react to events without central control.
 
-### Saga Pattern
-Distributed transactions across services using choreography or orchestration.
-Each service does its step + publishes event for next service.
-If any step fails → compensating transactions to rollback.
+### Saga Orchestration
+Central coordinator manages the workflow.
 
-### Circuit Breaker
-Prevent cascading failures. After N failures, "open" the circuit — fail fast instead of waiting for timeout.
-Libraries: **Resilience4j** (Java), **Polly** (.NET), **Hystrix** (deprecated)
+## Decision Matrix
+| Need | Use |
+|------|-----|
+| Simple CRUD | REST |
+| High throughput inter-service | gRPC |
+| Decoupled, reliable delivery | Message Queue |
+| Fan-out to many consumers | Pub/Sub |
+| Event replay needed | Kafka |
