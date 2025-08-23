@@ -1,44 +1,48 @@
 # GCP Load Balancing
 
-## Global Load Balancers
-**Single anycast IP** for worldwide traffic.
+## Types
+| Type | Scope | Layer | Protocol |
+|------|-------|-------|----------|
+| External HTTP(S) LB | Global | L7 | HTTP/HTTPS |
+| External TCP/UDP LB | Regional | L4 | TCP/UDP |
+| Internal HTTP(S) LB | Regional | L7 | HTTP/HTTPS |
+| Internal TCP/UDP LB | Regional | L4 | TCP/UDP |
 
-### External HTTPS LB
-- L7, global, anycast IP
-- SSL termination, URL-based routing
-- Cloud CDN integration, Cloud Armor WAF
-- Backends: GCE, GKE, Cloud Run, Cloud Functions
-- **Most common for public web apps**
-
-### External TCP/UDP Proxy LB
-- L4, global, for non-HTTP traffic
-- SSL offloading for TCP
-
-## Regional Load Balancers
-
-### Internal TCP/UDP LB
-- L4, regional, for internal traffic
-- VM-to-VM communication within VPC
-- Passthrough (DSR) — high performance
-
-### Internal HTTPS LB (Envoy-based)
-- L7, regional, internal
-- URL-based routing for microservices
-- gRPC support
-
-## Serverless NEG (Network Endpoint Group)
-Route traffic to serverless services:
+## Global HTTP(S) Load Balancer
 ```
-HTTPS LB → Serverless NEG → Cloud Run
-                           → Cloud Functions
-                           → App Engine
+User → Global Anycast IP → Google Edge POP → Backend (nearest region)
 ```
 
-## Comparison
-| Feature | GCP HTTPS LB | AWS ALB | Azure Front Door |
-|---------|-------------|---------|-----------------|
-| Scope | Global | Regional | Global |
-| Anycast IP | Yes | No (per-region) | Yes |
-| CDN integrated | Cloud CDN | CloudFront (separate) | Built-in |
-| WAF | Cloud Armor | AWS WAF | Azure WAF |
-| Serverless backend | Yes | Yes | Yes |
+Features:
+- Single anycast IP for all regions
+- Content-based routing (URL maps)
+- Cloud CDN integration
+- Cloud Armor (WAF) integration
+- SSL termination at the edge
+- Automatic SSL certificates
+
+## URL Map Example
+```yaml
+defaultService: backend-service-default
+hostRules:
+  - hosts: ["api.example.com"]
+    pathMatcher: api-paths
+pathMatchers:
+  - name: api-paths
+    defaultService: api-backend
+    pathRules:
+      - paths: ["/v1/*"]
+        service: api-v1-backend
+      - paths: ["/v2/*"]
+        service: api-v2-backend
+```
+
+## Health Checks
+```bash
+gcloud compute health-checks create http my-check \
+  --port=8080 \
+  --request-path=/health \
+  --check-interval=10s \
+  --healthy-threshold=2 \
+  --unhealthy-threshold=3
+```
