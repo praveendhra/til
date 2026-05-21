@@ -156,3 +156,24 @@ Production Kubernetes operations, networking, and troubleshooting.
 ---
 
 *Total: 105+ entries across 12 categories. Updated regularly.*
+
+### AI & Machine Learning (15 entries)
+Deep dives into modern AI — LLMs, agents, RAG, and production AI systems.
+
+| Topic | Key Concepts |
+|-------|-------------|
+| [Transformer Architecture](ai/transformer-architecture.md) | Self-attention, multi-head, encoder vs decoder |
+| [Prompt Engineering](ai/prompt-engineering.md) | Few-shot, CoT, ReAct, temperature tuning |
+| [RAG](ai/rag-retrieval-augmented-generation.md) | Chunking, embeddings, vector search, hybrid retrieval |
+| [AI Agents & Tool Use](ai/ai-agents-and-tool-use.md) | ReAct loop, function calling, multi-agent |
+| [LangChain & LangGraph](ai/langchain-and-langgraph.md) | LCEL, stateful workflows, human-in-the-loop |
+| [Vector Databases](ai/vector-databases-and-embeddings.md) | HNSW, IVF, Pinecone vs Qdrant, similarity search |
+| [Fine-Tuning vs RAG](ai/fine-tuning-vs-prompting-vs-rag.md) | Decision framework, LoRA, QLoRA |
+| [MCP Protocol](ai/mcp-model-context-protocol.md) | Tools, resources, prompts, server implementation |
+| [LLM Evaluation](ai/llm-evaluation-and-testing.md) | RAGAS, LLM-as-judge, CI testing |
+| [AI Safety & Guardrails](ai/ai-safety-and-guardrails.md) | Prompt injection, output filtering, NeMo |
+| [Multi-Agent Systems](ai/multi-agent-systems.md) | CrewAI, orchestration patterns, collaboration |
+| [Tokenization & Context](ai/tokenization-and-context-windows.md) | BPE, context limits, cost management |
+| [LLMOps](ai/llmops-ai-in-production.md) | Latency, caching, model routing, monitoring |
+| [Structured Output](ai/structured-output-and-function-calling.md) | JSON mode, Pydantic, Instructor, parallel calls |
+| [Open Source LLMs](ai/open-source-llms-and-self-hosting.md) | vLLM, Ollama, quantization, K8s deployment |
