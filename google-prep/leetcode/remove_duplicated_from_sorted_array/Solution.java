@@ -8,7 +8,6 @@ class Solution {
             uniqueNums.add(nums[i]);
         }
 
-        // convert HashSet → Integer[] → sort → copy back into nums
         Integer[] sorted = uniqueNums.toArray(new Integer[0]);
         Arrays.sort(sorted);
 
